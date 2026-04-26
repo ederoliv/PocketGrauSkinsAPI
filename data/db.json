@@ -1,0 +1,48 @@
+{
+  "skins": [
+    {
+      "id": 1,
+      "nome": "Personagem - Recruta Urbano",
+      "descricao": "Skin inicial com trajes militares táticos e camuflagem urbana. Ideal para missões noturnas.",
+      "tipo": "PERSONAGEM",
+      "banners": [
+        "https://unibits.com/assets/skins/recruta-front.jpg",
+        "https://unibits.com/assets/skins/recruta-back.jpg",
+        "https://unibits.com/assets/skins/recruta-action.jpg"
+      ],
+      "arquivoSkin": "https://unibits.com/assets/downloads/skin_recruta_v1.png"
+    },
+    {
+      "id": 2,
+      "nome": "Moto - X-Phantom 600",
+      "descricao": "Uma moto esportiva com detalhes em neon azul. Alta performance e visual futurista.",
+      "tipo": "MOTO",
+      "banners": [
+        "https://unibits.com/assets/skins/moto-phantom-1.jpg",
+        "https://unibits.com/assets/skins/moto-phantom-2.jpg"
+      ],
+      "arquivoSkin": "https://unibits.com/assets/downloads/moto_phantom.png"
+    },
+    {
+      "id": 3,
+      "nome": "Personagem - Soldado Veterano",
+      "descricao": "Skin premium com cicatrizes de batalha e colete balístico reforçado.",
+      "tipo": "PERSONAGEM",
+      "banners": [
+        "https://unibits.com/assets/skins/veterano-1.jpg"
+      ],
+      "arquivoSkin": "https://unibits.com/assets/downloads/skin_veterano.png"
+    },
+    {
+      "id": 4,
+      "nome": "Moto - Chopper Custom",
+      "descricao": "Estilo clássico americano com acabamento em cromo e chamas pintadas no tanque.",
+      "tipo": "MOTO",
+      "banners": [
+        "https://unibits.com/assets/skins/moto-chopper-main.jpg",
+        "https://unibits.com/assets/skins/moto-chopper-side.jpg"
+      ],
+      "arquivoSkin": "https://unibits.com/assets/downloads/moto_chopper_v2.png"
+    }
+  ]
+}
