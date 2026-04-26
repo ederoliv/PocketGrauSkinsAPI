@@ -2,8 +2,7 @@
   "name": "skins-api-ts",
   "version": "1.0.0",
   "scripts": {
-"dev": "ts-node-dev --respawn --transpile-only api/index.ts",
-    "build": "tsc"
+    "dev": "ts-node-dev --respawn --transpile-only api/index.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
