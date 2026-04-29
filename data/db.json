@@ -1,48 +1,49 @@
 {
-  "skins": [
-    {
-      "id": 1,
-      "nome": "Personagem - Recruta Urbano",
-      "descricao": "Skin inicial com trajes militares táticos e camuflagem urbana. Ideal para missões noturnas.",
-      "tipo": "PERSONAGEM",
-      "banners": [
-        "https://unibits.com/assets/skins/recruta-front.jpg",
-        "https://unibits.com/assets/skins/recruta-back.jpg",
-        "https://unibits.com/assets/skins/recruta-action.jpg"
-      ],
-      "arquivoSkin": "https://unibits.com/assets/downloads/skin_recruta_v1.png"
-    },
-    {
-      "id": 2,
-      "nome": "Moto - X-Phantom 600",
-      "descricao": "Uma moto esportiva com detalhes em neon azul. Alta performance e visual futurista.",
-      "tipo": "MOTO",
-      "banners": [
-        "https://unibits.com/assets/skins/moto-phantom-1.jpg",
-        "https://unibits.com/assets/skins/moto-phantom-2.jpg"
-      ],
-      "arquivoSkin": "https://unibits.com/assets/downloads/moto_phantom.png"
-    },
-    {
-      "id": 3,
-      "nome": "Personagem - Soldado Veterano",
-      "descricao": "Skin premium com cicatrizes de batalha e colete balístico reforçado.",
-      "tipo": "PERSONAGEM",
-      "banners": [
-        "https://unibits.com/assets/skins/veterano-1.jpg"
-      ],
-      "arquivoSkin": "https://unibits.com/assets/downloads/skin_veterano.png"
-    },
-    {
-      "id": 4,
-      "nome": "Moto - Chopper Custom",
-      "descricao": "Estilo clássico americano com acabamento em cromo e chamas pintadas no tanque.",
-      "tipo": "MOTO",
-      "banners": [
-        "https://unibits.com/assets/skins/moto-chopper-main.jpg",
-        "https://unibits.com/assets/skins/moto-chopper-side.jpg"
-      ],
-      "arquivoSkin": "https://unibits.com/assets/downloads/moto_chopper_v2.png"
-    }
-  ]
+  "skins":
+[
+  {
+    "id": 1,
+    "nome": "Hugo Milgrau",
+    "descricao": "Aquela skin braba com o famoso corta-vento refletivo e juliet. Pronto pro role e pra chamar no grau na favela.",
+    "tipo": "PERSONAGEM",
+    "banners": [
+      "https://unibits.com/assets/skins/recruta-front.jpg",
+      "https://unibits.com/assets/skins/recruta-back.jpg",
+      "https://unibits.com/assets/skins/recruta-action.jpg"
+    ],
+    "arquivoSkin": "https://unibits.com/assets/downloads/skin_recruta_v1.png"
+  },
+  {
+    "id": 2,
+    "nome": "CG 160 Titan Azulão",
+    "descricao": "Pintura azul metálica com detalhes esportivos, sem retrovisor e escapamento modificado pra dar aquele estralo no grau.",
+    "tipo": "MOTO",
+    "banners": [
+      "https://unibits.com/assets/skins/moto-phantom-1.jpg",
+      "https://unibits.com/assets/skins/moto-phantom-2.jpg"
+    ],
+    "arquivoSkin": "https://unibits.com/assets/downloads/moto_phantom.png"
+  },
+  {
+    "id": 3,
+    "nome": "Motoboy Entregador",
+    "descricao": "A skin clássica do motoboy guerreiro, com bag de aplicativo nas costas e capacete San Marino destravado.",
+    "tipo": "PERSONAGEM",
+    "banners": [
+      "https://unibits.com/assets/skins/veterano-1.jpg"
+    ],
+    "arquivoSkin": "https://unibits.com/assets/downloads/skin_veterano.png"
+  },
+  {
+    "id": 4,
+    "nome": "POP-100 do Corte",
+    "descricao": "A braba não tem jeito! Sem rabeta e com o motor preparado para cortar giro nos bailes de São Paulo.",
+    "tipo": "MOTO",
+    "banners": [
+      "https://unibits.com/assets/skins/moto-chopper-main.jpg",
+      "https://unibits.com/assets/skins/moto-chopper-side.jpg"
+    ],
+    "arquivoSkin": "https://unibits.com/assets/downloads/moto_chopper_v2.png"
+  }
+]
 }
