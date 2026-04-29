@@ -7,11 +7,11 @@
     "descricao": "Aquela skin braba com o famoso corta-vento refletivo e juliet. Pronto pro role e pra chamar no grau na favela.",
     "tipo": "PERSONAGEM",
     "banners": [
-      "https://unibits.com/assets/skins/recruta-front.jpg",
-      "https://unibits.com/assets/skins/recruta-back.jpg",
-      "https://unibits.com/assets/skins/recruta-action.jpg"
+      "https://unibits.com.br/skins-pocket-grau/test_image_pgs.png",
+      "https://unibits.com.br/skins-pocket-grau/test_image_pgs.png",
+      "https://unibits.com.br/skins-pocket-grau/test_image_pgs.png"
     ],
-    "arquivoSkin": "https://unibits.com/assets/downloads/skin_recruta_v1.png"
+    "arquivoSkin": "https://unibits.com.br/skins-pocket-grau/skin.jpeg"
   },
   {
     "id": 2,
@@ -19,10 +19,10 @@
     "descricao": "Pintura azul metálica com detalhes esportivos, sem retrovisor e escapamento modificado pra dar aquele estralo no grau.",
     "tipo": "MOTO",
     "banners": [
-      "https://unibits.com/assets/skins/moto-phantom-1.jpg",
-      "https://unibits.com/assets/skins/moto-phantom-2.jpg"
+      "https://unibits.com.br/skins-pocket-grau/test_image_pgs.png",
+      "https://unibits.com.br/skins-pocket-grau/test_image_pgs.png"
     ],
-    "arquivoSkin": "https://unibits.com/assets/downloads/moto_phantom.png"
+    "arquivoSkin": "https://unibits.com.br/skins-pocket-grau/skin.jpeg"
   },
   {
     "id": 3,
@@ -30,9 +30,9 @@
     "descricao": "A skin clássica do motoboy guerreiro, com bag de aplicativo nas costas e capacete San Marino destravado.",
     "tipo": "PERSONAGEM",
     "banners": [
-      "https://unibits.com/assets/skins/veterano-1.jpg"
+      "https://unibits.com.br/skins-pocket-grau/test_image_pgs.png"
     ],
-    "arquivoSkin": "https://unibits.com/assets/downloads/skin_veterano.png"
+    "arquivoSkin": "https://unibits.com.br/skins-pocket-grau/skin.jpeg"
   },
   {
     "id": 4,
@@ -40,10 +40,10 @@
     "descricao": "A braba não tem jeito! Sem rabeta e com o motor preparado para cortar giro nos bailes de São Paulo.",
     "tipo": "MOTO",
     "banners": [
-      "https://unibits.com/assets/skins/moto-chopper-main.jpg",
-      "https://unibits.com/assets/skins/moto-chopper-side.jpg"
+      "https://unibits.com.br/skins-pocket-grau/test_image_pgs.png",
+      "https://unibits.com.br/skins-pocket-grau/test_image_pgs.png"
     ],
-    "arquivoSkin": "https://unibits.com/assets/downloads/moto_chopper_v2.png"
+    "arquivoSkin": "https://unibits.com.br/skins-pocket-grau/skin.jpeg"
   }
 ]
 }
