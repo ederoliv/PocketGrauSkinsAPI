@@ -26,11 +26,11 @@ app.get('/', (_req, res) => {
   res.json({ message: 'API de Skins Pocket Grau está online! 🚀' });
 });
 
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = Number(process.env.PORT) || 3000;
-  app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-  });
-}
+// Railway (e qualquer servidor não-serverless) precisa escutar sempre.
+// O process.env.PORT é injetado automaticamente pelo Railway.
+const PORT = Number(process.env.PORT) || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+});
 
 export default app;
