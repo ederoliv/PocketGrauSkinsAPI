@@ -1,22 +1,33 @@
-import skinRepository from '../repositories/skinRepository';
 import { Skin, SkinType } from '../models/Skin';
+import skinRepository from '../repositories/skinRepository';
 
 class SkinService {
-    public getAllSkins(tipo?: string): Skin[] {
-        let skins = skinRepository.findAll();
+  public async getAllSkins(tipo?: string): Promise<Skin[]> {
+    const tipoFiltro = tipo ? (tipo.toUpperCase() as SkinType) : undefined;
+    return skinRepository.findAll(tipoFiltro);
+  }
 
-        if (tipo) {
-            skins = skins.filter(s => s.tipo === (tipo.toUpperCase() as SkinType));
-        }
+  public async getSkinById(id: string): Promise<Skin> {
+    const skin = await skinRepository.findById(Number(id));
+    if (!skin) throw new Error('Skin não encontrada');
+    return skin;
+  }
 
-        return skins;
-    }
+  public async createSkin(data: {
+    nome: string;
+    descricao: string;
+    tipo: SkinType;
+    banners: string[];
+    arquivoSkin: string;
+  }): Promise<Skin> {
+    return skinRepository.create(data);
+  }
 
-    public getSkinById(id: string): Skin {
-        const skin = skinRepository.findById(Number(id));
-        if (!skin) throw new Error("Skin não encontrada");
-        return skin;
-    }
+  public async deleteSkin(id: string): Promise<Skin> {
+    const skin = await skinRepository.deleteById(Number(id));
+    if (!skin) throw new Error('Skin não encontrada');
+    return skin;
+  }
 }
 
 export default new SkinService();

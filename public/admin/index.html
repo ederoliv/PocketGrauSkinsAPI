@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel Admin — Pocket Grau Skins</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f14;
+      --surface: #161b27;
+      --surface2: #1a2133;
+      --border: #1e2a40;
+      --accent: #f97316;
+      --accent-hover: #ea6c0e;
+      --danger: #ef4444;
+      --text: #e2e8f0;
+      --text-muted: #64748b;
+      --success: #22c55e;
+      --radius: 12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header-brand {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #btnLogout {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-family: inherit;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    #btnLogout:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* ── LAYOUT ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    /* ── SECTION TITLES ── */
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 16px;
+    }
+
+    /* ── SKIN LIST ── */
+    #skinList {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .skin-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: border-color .2s;
+    }
+    .skin-card:hover { border-color: #2a3a58; }
+
+    .skin-thumb {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: var(--surface2);
+      flex-shrink: 0;
+    }
+
+    .skin-info { flex: 1; min-width: 0; }
+    .skin-name {
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .skin-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .badge-personagem { background: #1e3a5f; color: #60a5fa; }
+    .badge-moto { background: #3b1f06; color: #fb923c; }
+
+    .btn-delete {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 18px;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s;
+      flex-shrink: 0;
+    }
+    .btn-delete:hover { border-color: var(--danger); color: var(--danger); background: rgba(239,68,68,.08); }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* ── FORM PANEL ── */
+    .form-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      position: sticky;
+      top: 76px;
+    }
+
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus { border-color: var(--accent); }
+
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group select option { background: #1a2133; }
+
+    /* File inputs */
+    .file-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      text-align: center;
+      gap: 6px;
+    }
+    .file-label:hover { border-color: var(--accent); background: rgba(249,115,22,.04); }
+    .file-label span { font-size: 13px; color: var(--text-muted); }
+    .file-label strong { font-size: 13px; color: var(--text); }
+    .file-label input[type="file"] { display: none; }
+
+    #fileNameBanners, #fileNameSkin {
+      font-size: 12px;
+      color: var(--accent);
+      margin-top: 6px;
+      min-height: 16px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      margin-top: 8px;
+    }
+    .btn-submit:hover { background: var(--accent-hover); }
+    .btn-submit:active { transform: scale(.98); }
+    .btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* ── PROGRESS MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.75);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 32px 80px rgba(0,0,0,.7);
+      animation: slideUp .25s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .step-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 14px;
+    }
+
+    .step-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      transition: all .3s;
+    }
+
+    .step-icon.spinning::after {
+      content: '';
+      display: block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .step-icon.done { background: rgba(34,197,94,.12); border-color: var(--success); }
+    .step-icon.error { background: rgba(239,68,68,.12); border-color: var(--danger); }
+
+    .step-text { flex: 1; }
+    .step-label { font-weight: 500; }
+    .step-status { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .step-status.success { color: var(--success); }
+    .step-status.error { color: var(--danger); }
+
+    .modal-footer {
+      margin-top: 28px;
+      text-align: center;
+    }
+
+    #btnCloseModal {
+      display: none;
+      padding: 11px 32px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    #btnCloseModal:hover { background: var(--accent-hover); }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all .3s;
+      z-index: 200;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.success { border-left: 3px solid var(--success); }
+    #toast.error { border-left: 3px solid var(--danger); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-brand">🏍️ Pocket Grau Skins <span style="font-weight:400;color:var(--text-muted);font-size:13px">— Admin</span></div>
+    <button id="btnLogout">Sair</button>
+  </header>
+
+  <main>
+    <!-- ── LISTA DE SKINS ── -->
+    <section>
+      <p class="section-title">Skins Cadastradas</p>
+      <div id="skinList">
+        <div class="empty-state">Carregando skins...</div>
+      </div>
+    </section>
+
+    <!-- ── FORMULÁRIO ── -->
+    <aside>
+      <div class="form-panel">
+        <p class="section-title" style="margin-bottom:20px">Nova Skin</p>
+        <form id="skinForm" novalidate>
+          <div class="form-group">
+            <label for="nome">Nome *</label>
+            <input type="text" id="nome" name="nome" placeholder="Ex: Hugo Milgrau" required />
+          </div>
+
+          <div class="form-group">
+            <label for="descricao">Descrição *</label>
+            <textarea id="descricao" name="descricao" placeholder="Descreva a skin..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="tipo">Tipo *</label>
+            <select id="tipo" name="tipo" required>
+              <option value="PERSONAGEM">Personagem</option>
+              <option value="MOTO">Moto</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Banners * <span style="font-size:11px;text-transform:none">(até 4 imagens)</span></label>
+            <label class="file-label" for="banners">
+              <span style="font-size:22px">🖼️</span>
+              <strong>Escolher banners</strong>
+              <span>JPG / PNG — até 4 arquivos</span>
+              <input type="file" id="banners" name="banners" accept="image/*" multiple />
+            </label>
+            <p id="fileNameBanners"></p>
+          </div>
+
+          <div class="form-group">
+            <label>Arquivo da Skin *</label>
+            <label class="file-label" for="arquivoSkin">
+              <span style="font-size:22px">📦</span>
+              <strong>Escolher skin</strong>
+              <span>PNG 500×500</span>
+              <input type="file" id="arquivoSkin" name="arquivoSkin" accept="image/png" />
+            </label>
+            <p id="fileNameSkin"></p>
+          </div>
+
+          <button type="submit" class="btn-submit" id="btnSubmit">Cadastrar Skin</button>
+        </form>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ── PROGRESS MODAL ── -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <h2 id="modalTitle">Cadastrando skin...</h2>
+      <ul class="step-list">
+        <li class="step" id="step-dados">
+          <div class="step-icon" id="icon-dados"></div>
+          <div class="step-text">
+            <div class="step-label">Dados da skin</div>
+            <div class="step-status" id="status-dados">Aguardando...</div>
+          </div>
+        </li>
+        <li class="step" id="step-skin">
+          <div class="step-icon" id="icon-skin"></div>
+          <div class="step-text">
+            <div class="step-label">Arquivo da skin</div>
+            <div class="step-status" id="status-skin">Aguardando...</div>
+          </div>
+        </li>
+        <li class="step" id="step-banners">
+          <div class="step-icon" id="icon-banners"></div>
+          <div class="step-text">
+            <div class="step-label">Banners</div>
+            <div class="step-status" id="status-banners">Aguardando...</div>
+          </div>
+        </li>
+      </ul>
+      <div class="modal-footer">
+        <button id="btnCloseModal">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOAST ── -->
+  <div id="toast"></div>
+
+  <script>
+    // ── AUTH GUARD ──────────────────────────────────────────────────────────
+    const token = localStorage.getItem('admin_token');
+    if (!token) window.location.href = '/admin/login';
+
+    function authHeaders() {
+      return { 'Authorization': `Bearer ${token}` };
+    }
+
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      localStorage.removeItem('admin_token');
+      window.location.href = '/admin/login';
+    });
+
+    // ── TOAST ───────────────────────────────────────────────────────────────
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `show ${type}`;
+      setTimeout(() => { t.className = ''; }, 3500);
+    }
+
+    // ── LOAD SKINS ──────────────────────────────────────────────────────────
+    async function loadSkins() {
+      const list = document.getElementById('skinList');
+      try {
+        const res = await fetch('/admin/skins', { headers: authHeaders() });
+        if (res.status === 401) { window.location.href = '/admin/login'; return; }
+        const skins = await res.json();
+
+        if (!skins.length) {
+          list.innerHTML = '<div class="empty-state">Nenhuma skin cadastrada ainda.</div>';
+          return;
+        }
+
+        list.innerHTML = skins.map(s => `
+          <div class="skin-card">
+            <img
+              class="skin-thumb"
+              src="${s.banners?.[0] ?? ''}"
+              alt="${s.nome}"
+              onerror="this.style.opacity='.3'"
+            />
+            <div class="skin-info">
+              <div class="skin-name">${s.nome}</div>
+              <div class="skin-meta">
+                <span class="badge badge-${s.tipo.toLowerCase()}">${s.tipo}</span>
+                &nbsp;${s.banners.length} banner${s.banners.length > 1 ? 's' : ''}
+              </div>
+            </div>
+            <button
+              class="btn-delete"
+              onclick="deleteSkin(${s.id}, '${s.nome.replace(/'/g,"\\'")}', this)"
+              title="Remover skin"
+            >🗑</button>
+          </div>
+        `).join('');
+      } catch {
+        list.innerHTML = '<div class="empty-state">Erro ao carregar skins.</div>';
+      }
+    }
+
+    loadSkins();
+
+    // ── DELETE SKIN ─────────────────────────────────────────────────────────
+    async function deleteSkin(id, nome, btn) {
+      if (!confirm(`Remover a skin "${nome}"? Esta ação não pode ser desfeita.`)) return;
+      btn.disabled = true;
+      btn.textContent = '⏳';
+      try {
+        const res = await fetch(`/admin/skins/${id}`, {
+          method: 'DELETE',
+          headers: authHeaders(),
+        });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.error ?? 'Erro ao remover.', 'error'); btn.disabled = false; btn.textContent = '🗑'; return; }
+        showToast(`"${nome}" removida com sucesso.`, 'success');
+        loadSkins();
+      } catch {
+        showToast('Erro de conexão.', 'error');
+        btn.disabled = false;
+        btn.textContent = '🗑';
+      }
+    }
+
+    // ── FILE INPUT LABELS ───────────────────────────────────────────────────
+    document.getElementById('banners').addEventListener('change', function () {
+      const p = document.getElementById('fileNameBanners');
+      if (!this.files.length) { p.textContent = ''; return; }
+      p.textContent = Array.from(this.files).map(f => f.name).join(', ');
+    });
+
+    document.getElementById('arquivoSkin').addEventListener('change', function () {
+      const p = document.getElementById('fileNameSkin');
+      p.textContent = this.files[0]?.name ?? '';
+    });
+
+    // ── MODAL HELPERS ───────────────────────────────────────────────────────
+    function setStep(key, state, msg) {
+      // state: 'waiting' | 'loading' | 'done' | 'error'
+      const icon = document.getElementById(`icon-${key}`);
+      const status = document.getElementById(`status-${key}`);
+      icon.className = 'step-icon';
+      status.className = 'step-status';
+
+      if (state === 'loading') {
+        icon.className = 'step-icon spinning';
+        status.textContent = msg;
+      } else if (state === 'done') {
+        icon.className = 'step-icon done';
+        icon.textContent = '✅';
+        status.className = 'step-status success';
+        status.textContent = msg;
+      } else if (state === 'error') {
+        icon.className = 'step-icon error';
+        icon.textContent = '❌';
+        status.className = 'step-status error';
+        status.textContent = msg;
+      } else {
+        icon.textContent = '';
+        status.textContent = msg;
+      }
+    }
+
+    function openModal() {
+      setStep('dados',    'waiting', 'Aguardando...');
+      setStep('skin',     'waiting', 'Aguardando...');
+      setStep('banners',  'waiting', 'Aguardando...');
+      document.getElementById('modalTitle').textContent = 'Cadastrando skin...';
+      document.getElementById('btnCloseModal').style.display = 'none';
+      document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    document.getElementById('btnCloseModal').addEventListener('click', closeModal);
+
+    // ── FORM SUBMIT ─────────────────────────────────────────────────────────
+    document.getElementById('skinForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nome        = document.getElementById('nome').value.trim();
+      const descricao   = document.getElementById('descricao').value.trim();
+      const tipo        = document.getElementById('tipo').value;
+      const bannersEl   = document.getElementById('banners');
+      const skinEl      = document.getElementById('arquivoSkin');
+
+      if (!nome || !descricao) { showToast('Preencha nome e descrição.', 'error'); return; }
+      if (!bannersEl.files.length) { showToast('Selecione pelo menos um banner.', 'error'); return; }
+      if (!skinEl.files.length)    { showToast('Selecione o arquivo da skin.', 'error'); return; }
+
+      openModal();
+
+      // Simula progresso visual sequencial enquanto aguarda o backend
+      setStep('dados',   'loading', 'Salvando dados...');
+      await delay(400);
+      setStep('skin',    'loading', 'Enviando arquivo...');
+      await delay(300);
+      setStep('banners', 'loading', 'Enviando banners...');
+
+      const formData = new FormData();
+      formData.append('nome', nome);
+      formData.append('descricao', descricao);
+      formData.append('tipo', tipo);
+      Array.from(bannersEl.files).forEach(f => formData.append('banners', f));
+      formData.append('arquivoSkin', skinEl.files[0]);
+
+      try {
+        const res = await fetch('/admin/skins', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: formData,
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          setStep('dados',   'error', 'Falha');
+          setStep('skin',    'error', 'Falha');
+          setStep('banners', 'error', data.error ?? 'Erro desconhecido');
+          document.getElementById('modalTitle').textContent = 'Erro ao cadastrar';
+        } else {
+          setStep('dados',   'done', 'Dados salvos ✓');
+          setStep('skin',    'done', 'Skin enviada ✓');
+          setStep('banners', 'done', 'Banners enviados ✓');
+          document.getElementById('modalTitle').textContent = 'Skin cadastrada! 🎉';
+          document.getElementById('skinForm').reset();
+          document.getElementById('fileNameBanners').textContent = '';
+          document.getElementById('fileNameSkin').textContent = '';
+          loadSkins();
+        }
+      } catch {
+        setStep('dados',   'error', 'Falha');
+        setStep('skin',    'error', 'Falha');
+        setStep('banners', 'error', 'Erro de conexão');
+        document.getElementById('modalTitle').textContent = 'Erro ao cadastrar';
+      }
+
+      document.getElementById('btnCloseModal').style.display = 'inline-block';
+    });
+
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+  </script>
+</body>
+</html>

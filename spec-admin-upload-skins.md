@@ -2,7 +2,7 @@
 
 ## Contexto do Projeto
 
-Existe uma API Node/Express que serve um JSON de skins para um app mobile em React Native. Atualmente os dados estão num `db.json` local — isso precisa ser migrado para um banco de dados persistente, pois o filesystem da Vercel é efêmero (arquivos somem a cada redeploy).
+Existe uma API Node/Express que serve um JSON de skins para um app mobile em React Native. Atualmente os dados estão num `db.json` local — isso precisa ser migrado para um banco de dados persistente, pois o filesystem é efêmero (arquivos somem a cada redeploy).
 
 Cada skin tem a seguinte estrutura:
 
@@ -24,86 +24,125 @@ Cada skin tem a seguinte estrutura:
 
 ## Problema a Resolver
 
-1. **Migrar o `db.json`** para um banco de dados persistente (Supabase)
-2. **Migrar o storage de imagens** para o Supabase Storage
+1. **Migrar o `db.json`** para o PostgreSQL do Railway
+2. **Migrar o storage de imagens** para o bucket S3-compatible do Railway
 3. **Criar um painel web de administração** onde o cliente pode cadastrar e remover skins sem depender do desenvolvedor
 
 ---
 
 ## Ambiente e Restrições
 
-- **Hospedagem da API:** Vercel (agora) → Railway ($5/mês, em breve)
-- **Filesystem:** efêmero em ambos — nenhum arquivo pode ser salvo no disco do servidor
-- **Banco de dados:** Supabase (PostgreSQL, free tier)
-- **Storage de imagens:** Supabase Storage (1GB free — suficiente para o volume esperado de ~250 imagens)
+- **Hospedagem da API:** Railway ($5/mês)
+- **Filesystem:** efêmero — nenhum arquivo pode ser salvo no disco do servidor
+- **Banco de dados:** PostgreSQL nativo do Railway
+- **Storage de imagens:** Bucket S3-compatible do Railway (`t3.storageapi.dev`)
 - **Autenticação:** usuário único (só o admin acessa o painel)
 
 ---
 
-## Segurança — Supabase
-
-O acesso ao Supabase será feito **exclusivamente pela API Express**, usando a `service_role key` armazenada em variável de ambiente. Essa chave nunca é exposta ao app mobile nem ao frontend do painel.
-
-O app mobile só faz requests para a API Express. A API Express faz requests para o Supabase. Nenhum client externo tem credenciais para acessar o banco diretamente.
-
-A `anon key` do Supabase **não será utilizada**. O RLS (Row Level Security) não é crítico nesse modelo, mas pode ser configurado como camada extra de proteção se desejado.
+## Arquitetura
 
 ```
-App Mobile → API Express → Supabase
-                 ↑
-           (service_role key no .env)
+App Mobile → API Express → PostgreSQL (Railway)
+                  ↓
+           S3 Bucket (Railway)
+                  ↑
+           (credenciais no .env)
 ```
+
+O app mobile só faz requests para a API Express. A API Express acessa o banco e o bucket. Nenhum client externo tem credenciais diretas.
 
 ---
 
-## Banco de Dados — Supabase
+## Banco de Dados — PostgreSQL Railway
 
 ### Tabela `skins`
 
 ```sql
-create table skins (
-  id serial primary key,
-  nome text not null,
-  descricao text not null,
-  tipo text not null check (tipo in ('PERSONAGEM', 'MOTO')),
-  banners text[] not null default '{}',
-  arquivo_skin text not null,
-  criado_em timestamptz default now()
+CREATE TABLE skins (
+  id          SERIAL PRIMARY KEY,
+  nome        TEXT NOT NULL,
+  descricao   TEXT NOT NULL,
+  tipo        TEXT NOT NULL CHECK (tipo IN ('PERSONAGEM', 'MOTO')),
+  banners     TEXT[] NOT NULL DEFAULT '{}',
+  arquivo_skin TEXT NOT NULL,
+  criado_em   TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
-- `banners` é um array de strings com as URLs públicas do Supabase Storage
+- `banners` é um array de strings com as URLs públicas do bucket Railway
 - `arquivo_skin` é a URL pública do PNG de download
+
+### Conexão com o banco
+
+Usar o pacote `pg` com a `DATABASE_URL` fornecida pelo Railway.
+
+```js
+// src/lib/db.js
+const { Pool } = require('pg')
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+})
+
+module.exports = pool
+```
 
 ### Migração do db.json
 
-Popular a tabela manualmente via interface do Supabase (Table Editor) colando os dados existentes do `db.json`. É uma operação única e simples dado o volume atual de dados.
+Popular a tabela manualmente via Railway Database UI ou via script de seed. É uma operação única dado o volume atual de dados.
 
 ---
 
-## Storage de Imagens — Supabase Storage
+## Storage de Imagens — Railway S3 Bucket
 
-### Buckets necessários
+O bucket do Railway é compatível com a API S3 da AWS. Usar o SDK `@aws-sdk/client-s3`.
 
-| Bucket | Conteúdo | Acesso |
-|---|---|---|
-| `banners` | Imagens JPG/PNG de preview das skins | Público |
-| `skins` | Arquivos PNG 500x500 para download | Público |
+### Configuração do cliente S3
 
-Ambos os buckets precisam ser configurados como **públicos** para que as URLs funcionem diretamente no app mobile.
+```js
+// src/lib/storage.js
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3')
 
-### Organização dos arquivos
+const s3 = new S3Client({
+  endpoint: process.env.S3_ENDPOINT,       // https://t3.storageapi.dev
+  region: process.env.S3_REGION,           // auto
+  credentials: {
+    accessKeyId: process.env.S3_ACCESS_KEY_ID,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+  },
+  forcePathStyle: true,
+})
+
+module.exports = { s3 }
+```
+
+### Organização dos arquivos no bucket
 
 ```
-banners/
-  skin-1-banner-1.jpg
-  skin-1-banner-2.jpg
-  skin-2-banner-1.jpg
-
-skins/
-  skin-1.png
-  skin-2.png
+assembled-carrier-bhiq7yd/
+  banners/
+    skin-1-banner-1.jpg
+    skin-1-banner-2.jpg
+    skin-2-banner-1.jpg
+  skins/
+    skin-1.png
+    skin-2.png
 ```
+
+### URL pública dos arquivos
+
+```
+https://t3.storageapi.dev/{bucket-name}/{path}
+```
+
+Exemplo:
+```
+https://t3.storageapi.dev/assembled-carrier-bhiq7yd/banners/skin-1-banner-1.jpg
+```
+
+> ⚠️ Confirmar nas configurações do bucket do Railway se o acesso público está habilitado para leitura. Caso contrário, os arquivos não serão acessíveis pelo app mobile diretamente via URL.
 
 ---
 
@@ -112,9 +151,9 @@ skins/
 Autenticação simples de usuário único com JWT.
 
 **Fluxo:**
-1. Admin acessa `/admin/login` — página HTML com formulário (usuário + senha)
-2. POST para `/admin/auth` com as credenciais
-3. A API compara a senha com `bcrypt.compare()` usando o hash armazenado em variável de ambiente
+1. Admin acessa `/admin/login` — página HTML com campo de senha
+2. POST para `/admin/auth` com a senha
+3. A API compara com `bcrypt.compare()` usando o hash armazenado em variável de ambiente
 4. Se correto, retorna um JWT assinado com `JWT_SECRET`
 5. Token armazenado no `localStorage` do browser
 6. Todas as rotas de admin exigem o token no header `Authorization: Bearer <token>`
@@ -141,8 +180,8 @@ Servida pela própria Express via `express.static`.
 
 | Rota | Método | Auth | Descrição |
 |---|---|---|---|
-| `/admin/login` | GET | ❌ | Página de login |
-| `/admin/auth` | POST | ❌ | Valida credenciais, retorna JWT |
+| `/admin/login` | GET | ❌ | Página de login (campo de senha) |
+| `/admin/auth` | POST | ❌ | Valida senha, retorna JWT |
 | `/admin` | GET | ✅ | Página principal do painel |
 | `/admin/skins` | POST | ✅ | Cadastra nova skin |
 | `/admin/skins/:id` | DELETE | ✅ | Remove uma skin |
@@ -154,11 +193,47 @@ Servida pela própria Express via `express.static`.
   - Campo: Nome
   - Campo: Descrição
   - Campo: Tipo (select: PERSONAGEM / MOTO)
-  - Upload de banners (múltiplos arquivos, JPG/PNG, máximo 4)
+  - Upload de banners (múltiplos arquivos JPG/PNG, máximo 4)
   - Upload do arquivo da skin (PNG 500x500)
 - Botão de deletar skin
 
 Edição de skin não é necessária — delete + recadastro é suficiente.
+
+---
+
+## Modal de Salvamento
+
+Durante o cadastro de uma nova skin, exibir um **modal de progresso** que bloqueia a interação até a operação completar.
+
+### Comportamento
+
+- O modal abre imediatamente ao submeter o formulário
+- Cada etapa é salva de forma independente e sequencial
+- O status de cada etapa atualiza em tempo real conforme a API responde
+- Ao finalizar tudo com sucesso, exibir botão "Fechar" e resetar o formulário
+- Em caso de erro em qualquer etapa, indicar qual falhou com ícone de erro
+
+### Checklist do modal
+
+| Etapa | Estado inicial | Sucesso | Erro |
+|---|---|---|---|
+| Nome | ⏳ Salvando... | ✅ Nome salvo | ❌ Falha |
+| Descrição | ⏳ Salvando... | ✅ Descrição salva | ❌ Falha |
+| Tipo | ⏳ Salvando... | ✅ Tipo salvo | ❌ Falha |
+| Arquivo da skin | ⏳ Enviando arquivo... | ✅ Skin enviada | ❌ Falha |
+| Banners | ⏳ Enviando banners... | ✅ Banners enviados | ❌ Falha |
+
+> As etapas de Nome, Descrição e Tipo são parte de uma única operação no banco — podem ser agrupadas visualmente em "Dados da skin" se preferir simplificar o checklist para 3 itens: **Dados**, **Arquivo da skin**, **Banners**.
+
+### Fluxo de operações no backend ao receber o POST
+
+```
+1. Fazer upload dos banners para o S3 → receber URLs
+2. Fazer upload do arquivoSkin para o S3 → receber URL
+3. Inserir registro no PostgreSQL com todas as URLs
+```
+
+> O frontend pode fazer polling ou o backend pode responder de forma progressiva via SSE (Server-Sent Events) se quiser atualizar o modal em tempo real. Para simplicidade, uma solução aceitável é o backend responder só no final e o frontend simular progresso animado enquanto aguarda — deixar isso como decisão de implementação.
 
 ---
 
@@ -174,8 +249,8 @@ Edição de skin não é necessária — delete + recadastro é suficiente.
     "nome": "Personagem - Recruta Urbano",
     "descricao": "Skin inicial com trajes militares táticos.",
     "tipo": "PERSONAGEM",
-    "banners": ["https://...supabase.co/storage/v1/object/public/banners/skin-1-banner-1.jpg"],
-    "arquivoSkin": "https://...supabase.co/storage/v1/object/public/skins/skin-1.png"
+    "banners": ["https://t3.storageapi.dev/assembled-carrier-bhiq7yd/banners/skin-1-banner-1.jpg"],
+    "arquivoSkin": "https://t3.storageapi.dev/assembled-carrier-bhiq7yd/skins/skin-1.png"
   }
 ]
 ```
@@ -185,15 +260,16 @@ Edição de skin não é necessária — delete + recadastro é suficiente.
 ## Pacotes Necessários
 
 ```bash
-npm install @supabase/supabase-js multer bcrypt jsonwebtoken
+npm install pg multer bcrypt jsonwebtoken @aws-sdk/client-s3
 ```
 
-- `@supabase/supabase-js` — cliente Supabase (banco + storage)
+- `pg` — cliente PostgreSQL
 - `multer` — receber arquivos no request (usar `memoryStorage`, nunca salvar em disco)
 - `bcrypt` — hash e comparação de senha
 - `jsonwebtoken` — geração e verificação do JWT
+- `@aws-sdk/client-s3` — upload para o bucket S3-compatible do Railway
 
-> **Importante sobre o multer:** configurar com `multer.memoryStorage()` para que o arquivo fique em buffer na memória e seja enviado direto para o Supabase Storage, sem tocar no disco.
+> **Importante sobre o multer:** configurar com `multer.memoryStorage()` para que o arquivo fique em buffer na memória e seja enviado direto para o S3, sem tocar no disco.
 
 ---
 
@@ -208,11 +284,12 @@ npm install @supabase/supabase-js multer bcrypt jsonwebtoken
 │   ├── middleware/
 │   │   └── auth.js         # Verificação do JWT
 │   └── lib/
-│       └── supabase.js     # Instância do cliente Supabase
+│       ├── db.js           # Instância do Pool PostgreSQL
+│       └── storage.js      # Instância do cliente S3
 ├── public/
 │   └── admin/
 │       ├── login.html
-│       └── index.html
+│       └── index.html      # Inclui o modal de progresso
 ├── .env
 └── index.js
 ```
@@ -222,12 +299,17 @@ npm install @supabase/supabase-js multer bcrypt jsonwebtoken
 ## Variáveis de Ambiente
 
 ```env
-# Supabase
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
+# PostgreSQL Railway
+DATABASE_URL=
+
+# S3 Railway
+S3_ENDPOINT=https://t3.storageapi.dev
+S3_REGION=auto
+S3_BUCKET_NAME=assembled-carrier-bhiq7yd
+S3_ACCESS_KEY_ID=
+S3_SECRET_ACCESS_KEY=
 
 # Auth do painel
-ADMIN_USERNAME=
 ADMIN_PASSWORD_HASH=    # resultado de bcrypt.hash('senha', 12)
 JWT_SECRET=
 ```
@@ -238,7 +320,7 @@ JWT_SECRET=
 
 - ❌ Salvar imagens ou qualquer arquivo no filesystem do servidor
 - ❌ Manter o `db.json` como fonte de dados
-- ❌ Usar a `anon key` do Supabase em qualquer lugar
-- ❌ Expor `SUPABASE_SERVICE_ROLE_KEY` ou `JWT_SECRET` no frontend
+- ❌ Expor `S3_SECRET_ACCESS_KEY` ou `JWT_SECRET` no frontend
 - ❌ Comparar senha sem bcrypt
+- ❌ Usar `multer.diskStorage()` — sempre `memoryStorage()`
 - ❌ Mudar o formato do JSON retornado em `GET /skins`

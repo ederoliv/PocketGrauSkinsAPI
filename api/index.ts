@@ -1,25 +1,36 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import skinRoutes from '../src/routes/skinRoutes';
+import adminRoutes from '../src/routes/adminRoutes';
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Todas as rotas dentro de skinRoutes serão prefixadas com /api/skins
+// Serve os arquivos estáticos do painel admin (public/admin/*.html, etc.)
+app.use(express.static(path.join(process.cwd(), 'public')));
+
+// Rotas públicas — app mobile consome estas
+app.use('/skins', skinRoutes);
+// Mantém compatibilidade com prefixo /api/skins legado (sem quebrar o app mobile atual)
 app.use('/api/skins', skinRoutes);
 
-// Rota de fallback/saúde da API
-app.get('/', (req, res) => {
-    res.json({ message: "API de Skins Unibits está online! 🚀" });
+// Rotas do painel de administração
+app.use('/admin', adminRoutes);
+
+// Rota de saúde da API
+app.get('/', (_req, res) => {
+  res.json({ message: 'API de Skins Pocket Grau está online! 🚀' });
 });
 
 if (process.env.NODE_ENV !== 'production') {
-    const PORT = 3000;
-    app.listen(PORT, () => {
-        console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-    });
+  const PORT = Number(process.env.PORT) || 3000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+  });
 }
 
 export default app;
