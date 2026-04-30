@@ -353,10 +353,8 @@
   }
 
   async function openEdit(id) {
-    // Busca dados atuais
-    const res = await fetch(`/admin/skins/${id}`, { headers: H() });
+    const res = await fetch(`/skins/${id}`, { headers: H() });
     if (!res.ok) { toast('Erro ao carregar skin.', 'err'); return; }
-    // GET /skins/:id é rota pública — funciona sem auth header também
     const s = await res.json();
     document.getElementById('editId').value = id;
     document.getElementById('nome').value = s.nome;
