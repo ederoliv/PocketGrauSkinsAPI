@@ -1,17 +1,20 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 
+// Railway injeta as credenciais do bucket como AWS_*, mas também suportamos S3_* manual.
+const endpoint    = process.env.AWS_ENDPOINT_URL       ?? process.env.S3_ENDPOINT!;
+const region      = process.env.AWS_DEFAULT_REGION     ?? process.env.S3_REGION ?? 'auto';
+const accessKeyId = process.env.AWS_ACCESS_KEY_ID      ?? process.env.S3_ACCESS_KEY_ID!;
+const secretKey   = process.env.AWS_SECRET_ACCESS_KEY  ?? process.env.S3_SECRET_ACCESS_KEY!;
+
 const s3 = new S3Client({
-  endpoint: process.env.S3_ENDPOINT,       // https://t3.storageapi.dev
-  region: process.env.S3_REGION ?? 'auto',
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-  },
+  endpoint,
+  region,
+  credentials: { accessKeyId, secretAccessKey: secretKey },
   forcePathStyle: true,
 });
 
-const BUCKET = process.env.S3_BUCKET_NAME!;
-const ENDPOINT = process.env.S3_ENDPOINT!;
+const BUCKET   = process.env.AWS_S3_BUCKET_NAME ?? process.env.S3_BUCKET_NAME!;
+const ENDPOINT = process.env.AWS_ENDPOINT_URL   ?? process.env.S3_ENDPOINT!;
 
 /**
  * Faz upload de um buffer para o S3 e retorna a URL pública.
