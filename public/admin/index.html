@@ -37,7 +37,7 @@
 
     .toolbar {
       display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     .toolbar h1 { font-size: 20px; font-weight: 700; }
 
@@ -46,6 +46,7 @@
       background: var(--green); border: none; border-radius: 10px;
       color: #fff; font-size: 14px; font-weight: 600; font-family: inherit;
       padding: 10px 20px; cursor: pointer; transition: background .2s, transform .1s;
+      white-space: nowrap;
     }
     .btn-add:hover { background: var(--green-h); }
     .btn-add:active { transform: scale(.97); }
@@ -87,6 +88,77 @@
     .icon-btn:disabled { opacity: .4; cursor: not-allowed; }
 
     .empty { text-align: center; padding: 56px 0; color: var(--muted); font-size: 14px; }
+
+    /* SEARCH BAR */
+    .search-wrap {
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .search-wrap .search-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      font-size: 15px; pointer-events: none; opacity: .5;
+    }
+    #searchInput {
+      width: 100%; padding: 10px 14px 10px 40px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 14px;
+      font-family: inherit; outline: none; transition: border-color .2s;
+    }
+    #searchInput::placeholder { color: var(--muted); }
+    #searchInput:focus { border-color: var(--accent); }
+
+    /* THUMBNAIL CLICKABLE */
+    .thumb {
+      width: 48px; height: 48px; border-radius: 8px; object-fit: cover;
+      background: var(--surface2); display: block;
+      cursor: pointer; transition: transform .2s, box-shadow .2s;
+    }
+    .thumb:hover { transform: scale(1.08); box-shadow: 0 0 0 2px var(--accent); }
+
+    /* CAROUSEL MODAL */
+    .modal-carousel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px 24px 24px;
+      width: 100%; max-width: 560px;
+      box-shadow: 0 32px 80px rgba(0,0,0,.7);
+      animation: up .22s ease;
+    }
+    .carousel-stage {
+      position: relative; width: 100%; aspect-ratio: 16/9;
+      border-radius: 12px; overflow: hidden;
+      background: #000; margin-bottom: 14px;
+    }
+    .carousel-stage img {
+      width: 100%; height: 100%; object-fit: contain;
+      position: absolute; inset: 0;
+      opacity: 0; transition: opacity .3s;
+    }
+    .carousel-stage img.active { opacity: 1; }
+    .car-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.12);
+      color: #fff; width: 38px; height: 38px; border-radius: 50%;
+      font-size: 18px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      transition: background .2s; z-index: 2;
+    }
+    .car-btn:hover { background: rgba(249,115,22,.7); }
+    .car-btn.prev { left: 10px; }
+    .car-btn.next { right: 10px; }
+    .car-dots {
+      display: flex; justify-content: center; gap: 8px; margin-bottom: 16px;
+    }
+    .car-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--border); cursor: pointer; transition: background .2s, transform .2s;
+    }
+    .car-dot.active { background: var(--accent); transform: scale(1.3); }
+    .car-counter {
+      text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 18px;
+    }
+    #carouselSkinName {
+      font-size: 16px; font-weight: 700; margin-bottom: 4px;
+    }
 
     /* ── OVERLAY MODAL BASE ── */
     .overlay {
@@ -200,6 +272,11 @@
     <button class="btn-add" id="btnAdicionar">＋ Adicionar</button>
   </div>
 
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Buscar por nome ou descrição..." autocomplete="off" />
+  </div>
+
   <div class="table-wrap">
     <table id="tbl">
       <thead>
@@ -289,6 +366,26 @@
   </div>
 </div>
 
+<!-- ── MODAL CARROSSEL ── -->
+<div class="overlay" id="modalCarousel">
+  <div class="modal-carousel">
+    <div class="modal-header">
+      <div>
+        <div id="carouselSkinName"></div>
+        <div style="font-size:12px;color:var(--muted)" id="carouselSkinType"></div>
+      </div>
+      <button class="modal-close" id="btnCloseCarousel">✕</button>
+    </div>
+    <div class="carousel-stage" id="carouselStage">
+      <!-- imgs injected by JS -->
+      <button class="car-btn prev" id="carPrev">‹</button>
+      <button class="car-btn next" id="carNext">›</button>
+    </div>
+    <div class="car-counter" id="carCounter"></div>
+    <div class="car-dots" id="carDots"></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -309,32 +406,52 @@
     setTimeout(() => t.className = '', 3500);
   }
 
+  // ── ALL SKINS CACHE ──────────────────────────────────────────────────────
+  let allSkins = [];
+
   // ── LOAD TABLE ──────────────────────────────────────────────────────────
   async function loadSkins() {
     const tbody = document.getElementById('tbody');
     try {
       const res = await fetch('/admin/skins', { headers: H() });
       if (res.status === 401) { location.href = '/admin/login'; return; }
-      const skins = await res.json();
-      if (!skins.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="empty">Nenhuma skin cadastrada.</td></tr>';
-        return;
-      }
-      tbody.innerHTML = skins.map(s => `
-        <tr>
-          <td><img class="thumb" src="${s.banners?.[0]??''}" alt="" onerror="this.style.opacity='.2'" /></td>
-          <td style="font-weight:600">${esc(s.nome)}</td>
-          <td><span class="badge badge-${s.tipo.toLowerCase()}">${s.tipo}</span></td>
-          <td style="color:var(--muted)">${s.banners.length}</td>
-          <td>
-            <div class="actions">
-              <button class="icon-btn edit" title="Editar" onclick="openEdit(${s.id})">✏️</button>
-              <button class="icon-btn del"  title="Excluir" onclick="deleteSkin(${s.id},'${esc(s.nome)}',this)">🗑</button>
-            </div>
-          </td>
-        </tr>`).join('');
+      allSkins = await res.json();
+      renderTable(allSkins);
     } catch { tbody.innerHTML = '<tr><td colspan="5" class="empty">Erro ao carregar.</td></tr>'; }
   }
+
+  function renderTable(skins) {
+    const tbody = document.getElementById('tbody');
+    if (!skins.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">Nenhuma skin encontrada.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = skins.map(s => `
+      <tr>
+        <td><img class="thumb" src="${s.banners?.[0]??''}" alt="" onerror="this.style.opacity='.2'"
+          onclick="openCarousel(${s.id})" title="Ver banners" /></td>
+        <td style="font-weight:600">${esc(s.nome)}</td>
+        <td><span class="badge badge-${s.tipo.toLowerCase()}">${s.tipo}</span></td>
+        <td style="color:var(--muted)">${s.banners.length}</td>
+        <td>
+          <div class="actions">
+            <button class="icon-btn edit" title="Editar" onclick="openEdit(${s.id})">✏️</button>
+            <button class="icon-btn del"  title="Excluir" onclick="deleteSkin(${s.id},'${esc(s.nome)}',this)">🗑</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  // ── SEARCH ──────────────────────────────────────────────────────────────
+  document.getElementById('searchInput').addEventListener('input', function () {
+    const q = this.value.trim().toLowerCase();
+    if (!q) { renderTable(allSkins); return; }
+    const filtered = allSkins.filter(s =>
+      s.nome.toLowerCase().includes(q) ||
+      (s.descricao && s.descricao.toLowerCase().includes(q))
+    );
+    renderTable(filtered);
+  });
 
   function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,'&#39;'); }
   loadSkins();
@@ -468,6 +585,96 @@
       loadSkins();
     } catch { toast('Erro de conexão.','err'); btn.disabled=false; btn.textContent='🗑'; }
   }
+
+  // ── CAROUSEL ─────────────────────────────────────────────────────────────
+  let carIdx = 0;
+  let carBanners = [];
+
+  function openCarousel(id) {
+    const skin = allSkins.find(s => s.id === id);
+    if (!skin || !skin.banners?.length) { toast('Sem banners disponíveis.', 'err'); return; }
+
+    carBanners = skin.banners;
+    carIdx = 0;
+
+    document.getElementById('carouselSkinName').textContent = skin.nome;
+    document.getElementById('carouselSkinType').textContent = skin.tipo;
+
+    // Build images
+    const stage = document.getElementById('carouselStage');
+    stage.querySelectorAll('img').forEach(el => el.remove());
+    carBanners.forEach((url, i) => {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = `Banner ${i + 1}`;
+      if (i === 0) img.classList.add('active');
+      stage.prepend(img); // insert before buttons
+    });
+    // Correct order: prepend adds in reverse, fix:
+    const imgs = stage.querySelectorAll('img');
+    // Re-append in correct order
+    carBanners.forEach((url, i) => { imgs[carBanners.length - 1 - i].remove(); });
+    carBanners.forEach((url, i) => {
+      const img = document.createElement('img');
+      img.src = url; img.alt = `Banner ${i+1}`;
+      if (i === 0) img.classList.add('active');
+      stage.insertBefore(img, document.getElementById('carPrev'));
+    });
+
+    buildDots();
+    updateCarousel();
+    document.getElementById('modalCarousel').classList.add('active');
+  }
+
+  function buildDots() {
+    const dots = document.getElementById('carDots');
+    dots.innerHTML = '';
+    carBanners.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'car-dot' + (i === 0 ? ' active' : '');
+      d.onclick = () => { carIdx = i; updateCarousel(); };
+      dots.appendChild(d);
+    });
+  }
+
+  function updateCarousel() {
+    const stage = document.getElementById('carouselStage');
+    stage.querySelectorAll('img').forEach((img, i) => {
+      img.classList.toggle('active', i === carIdx);
+    });
+    document.querySelectorAll('.car-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === carIdx);
+    });
+    const total = carBanners.length;
+    document.getElementById('carCounter').textContent =
+      total > 1 ? `${carIdx + 1} / ${total}` : '';
+    document.getElementById('carPrev').style.display = total > 1 ? 'flex' : 'none';
+    document.getElementById('carNext').style.display = total > 1 ? 'flex' : 'none';
+  }
+
+  document.getElementById('carPrev').onclick = () => {
+    carIdx = (carIdx - 1 + carBanners.length) % carBanners.length;
+    updateCarousel();
+  };
+  document.getElementById('carNext').onclick = () => {
+    carIdx = (carIdx + 1) % carBanners.length;
+    updateCarousel();
+  };
+
+  document.getElementById('btnCloseCarousel').onclick = () =>
+    document.getElementById('modalCarousel').classList.remove('active');
+  document.getElementById('modalCarousel').onclick = (e) => {
+    if (e.target === document.getElementById('modalCarousel'))
+      document.getElementById('modalCarousel').classList.remove('active');
+  };
+
+  // Keyboard navigation for carousel
+  document.addEventListener('keydown', (e) => {
+    if (!document.getElementById('modalCarousel').classList.contains('active')) return;
+    if (e.key === 'ArrowLeft') { carIdx = (carIdx - 1 + carBanners.length) % carBanners.length; updateCarousel(); }
+    if (e.key === 'ArrowRight') { carIdx = (carIdx + 1) % carBanners.length; updateCarousel(); }
+    if (e.key === 'Escape') document.getElementById('modalCarousel').classList.remove('active');
+  });
 </script>
 </body>
 </html>
