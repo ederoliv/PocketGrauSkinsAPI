@@ -45,6 +45,20 @@ class SkinRepository {
     return result.rows[0] as Skin;
   }
 
+  public async updateById(id: number, data: {
+    nome: string; descricao: string; tipo: SkinType;
+    banners: string[]; arquivoSkin: string;
+  }): Promise<Skin | undefined> {
+    const result = await pool.query(
+      `UPDATE skins
+       SET nome=$1, descricao=$2, tipo=$3, banners=$4, arquivo_skin=$5
+       WHERE id=$6
+       RETURNING id, nome, descricao, tipo, banners, arquivo_skin AS "arquivoSkin"`,
+      [data.nome, data.descricao, data.tipo, data.banners, data.arquivoSkin, id]
+    );
+    return result.rows[0] as Skin | undefined;
+  }
+
   public async deleteById(id: number): Promise<Skin | undefined> {
     const result = await pool.query(
       `DELETE FROM skins WHERE id = $1

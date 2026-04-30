@@ -23,6 +23,15 @@ class SkinService {
     return skinRepository.create(data);
   }
 
+  public async updateSkin(id: string, data: {
+    nome: string; descricao: string; tipo: SkinType;
+    banners: string[]; arquivoSkin: string;
+  }): Promise<Skin> {
+    const skin = await skinRepository.updateById(Number(id), data);
+    if (!skin) throw new Error('Skin não encontrada');
+    return skin;
+  }
+
   public async deleteSkin(id: string): Promise<Skin> {
     const skin = await skinRepository.deleteById(Number(id));
     if (!skin) throw new Error('Skin não encontrada');

@@ -149,7 +149,77 @@ router.post(
 );
 
 // ---------------------------------------------------------------------------
-// DELETE /admin/skins/:id  — Remove skin do banco e do S3
+// PUT /admin/skins/:id  — Edita uma skin existente
+// Campos de texto obrigatórios: nome, descricao, tipo
+// Arquivos opcionais: banners e/ou arquivoSkin (se não enviados, mantém os atuais)
+// ---------------------------------------------------------------------------
+router.put(
+  '/skins/:id',
+  requireAuth,
+  upload.fields([
+    { name: 'banners', maxCount: 4 },
+    { name: 'arquivoSkin', maxCount: 1 },
+  ]),
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { nome, descricao, tipo } = req.body as {
+        nome?: string; descricao?: string; tipo?: string;
+      };
+
+      if (!nome || !descricao || !tipo) {
+        res.status(400).json({ error: 'Campos nome, descricao e tipo são obrigatórios.' });
+        return;
+      }
+      if (tipo !== 'PERSONAGEM' && tipo !== 'MOTO') {
+        res.status(400).json({ error: 'Tipo deve ser PERSONAGEM ou MOTO.' });
+        return;
+      }
+
+      // Busca skin atual para manter arquivos não substituídos
+      const atual = await skinService.getSkinById(req.params.id);
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+      const timestamp = Date.now();
+
+      // Banners: upload novo se enviado, senão mantém atual
+      let bannerUrls: string[];
+      if (files?.banners?.length) {
+        // Remove banners antigos do R2
+        await Promise.allSettled(atual.banners.map(u => deleteFile(keyFromUrl(u)).catch(console.error)));
+        bannerUrls = await Promise.all(
+          files.banners.map(async (file, i) => {
+            const ext = file.originalname.split('.').pop() ?? 'jpg';
+            return uploadFile(`banners/skin-${timestamp}-banner-${i + 1}.${ext}`, file.buffer, file.mimetype);
+          })
+        );
+      } else {
+        bannerUrls = atual.banners;
+      }
+
+      // Arquivo da skin: upload novo se enviado, senão mantém atual
+      let arquivoSkinUrl: string;
+      if (files?.arquivoSkin?.[0]) {
+        await deleteFile(keyFromUrl(atual.arquivoSkin)).catch(console.error);
+        const skinFile = files.arquivoSkin[0];
+        const ext = skinFile.originalname.split('.').pop() ?? 'png';
+        arquivoSkinUrl = await uploadFile(`skins/skin-${timestamp}.${ext}`, skinFile.buffer, skinFile.mimetype);
+      } else {
+        arquivoSkinUrl = atual.arquivoSkin;
+      }
+
+      const atualizada = await skinService.updateSkin(req.params.id, {
+        nome, descricao, tipo: tipo as SkinType, banners: bannerUrls, arquivoSkin: arquivoSkinUrl,
+      });
+
+      res.json(atualizada);
+    } catch (error: any) {
+      const status = error.message === 'Skin não encontrada' ? 404 : 500;
+      res.status(status).json({ error: error.message });
+    }
+  }
+);
+
+// ---------------------------------------------------------------------------
+// DELETE /admin/skins/:id  — Remove skin do banco e do R2
 // ---------------------------------------------------------------------------
 router.delete('/skins/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
