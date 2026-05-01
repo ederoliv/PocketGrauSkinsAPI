@@ -13,6 +13,9 @@
     body {
       font-family: 'Inter', sans-serif;
       background: #0d0f14;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       color: #e2e8f0;
       min-height: 100vh;
       display: flex;
@@ -21,8 +24,10 @@
     }
 
     .card {
-      background: #161b27;
-      border: 1px solid #1e2a40;
+      background: rgba(22, 27, 39, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 16px;
       padding: 48px 40px;
       width: 100%;
@@ -103,7 +108,7 @@
 <body>
   <div class="card">
     <div class="logo">
-      <h1>🏍️ Pocket Grau Skins</h1>
+      <img src="/admin/assets/logo.svg" alt="Pocket Grau Skins" style="width: 200px; max-width: 100%; margin-bottom: 8px;" />
       <p>Painel de Administração</p>
     </div>
 
@@ -116,6 +121,11 @@
   </div>
 
   <script>
+    // Random background
+    const bgImages = ['1.png', '2.png', '3.png', '4.png', '5.png'];
+    const randomImg = bgImages[Math.floor(Math.random() * bgImages.length)];
+    document.body.style.backgroundImage = `url('/admin/banners/${randomImg}')`;
+
     // Se já tem token, redireciona direto para o painel
     if (localStorage.getItem('admin_token')) {
       window.location.href = '/admin';

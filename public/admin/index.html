@@ -262,7 +262,10 @@
 <body>
 
 <header>
-  <div class="brand">🏍️ Pocket Grau Skins <span style="font-weight:400;color:var(--muted);font-size:13px">— Admin</span></div>
+  <div class="brand" style="display: flex; align-items: center; gap: 8px;">
+    <img src="/admin/assets/logo.svg" alt="Pocket Grau Skins" style="height: 30px;" />
+    <span style="font-weight:400;color:var(--muted);font-size:13px">— Admin</span>
+  </div>
   <button id="btnLogout">Sair</button>
 </header>
 
@@ -414,7 +417,7 @@
     const tbody = document.getElementById('tbody');
     try {
       const res = await fetch('/admin/skins', { headers: H() });
-      if (res.status === 401) { location.href = '/admin/login'; return; }
+      if (res.status === 401) { localStorage.removeItem('admin_token'); location.href = '/admin/login'; return; }
       allSkins = await res.json();
       renderTable(allSkins);
     } catch { tbody.innerHTML = '<tr><td colspan="5" class="empty">Erro ao carregar.</td></tr>'; }
